@@ -25,17 +25,22 @@ app.get("/", (req, res) => {
 });
 
 // Obtener todos los héroes
-app.get("/heroes", async(req, res) => {
-    const connection = await database.getConnection();
-    const result = await connection.query("SELECT * from heroes_list");
-    res.json(result);
+app.get("/heroes", async (req, res) => {
+  const connection = await database.getConnection();
+  const result = await connection.query("SELECT * from heroes_list");
+  res.json(result);
 });
 
 // Obtener un héroe por ID
-app.get("/heroes/:id", (req, res) => {
-  const hero = heroes.find((h) => h.id === parseInt(req.params.id));
-  if (!hero) return res.status(404).send("El héroe no fue encontrado");
-  res.json(hero);
+app.get("/heroes/:id", async (req, res) => {
+  try {
+    const connection = await database.getConnection();
+    const result = await connection.query("SELECT * from heroes_list WHERE id = ?", req.params.id);
+    if (result.length ===0 ) return res.status(404).send("El héroe no fue encontrado");
+    res.json(result);
+  } catch (error) {
+    res.status(500).send('Error al buscar el heroe')
+  }
 });
 
 // Crear un nuevo héroe
