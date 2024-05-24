@@ -81,21 +81,45 @@ app.post("/heroes", async (req, res) => {
 });
 
 // Actualizar un héroe existente
-app.put("/heroes/:id", (req, res) => {
-  const hero = heroes.find((h) => h.id === parseInt(req.params.id));
-  if (!hero) return res.status(404).send("El héroe no fue encontrado");
+app.put("/heroes/:id", async (req, res) => {
+  const { name, image } = req.body;
 
-  hero.name = req.body.name;
-  hero.image = req.body.image;
-  res.json(hero);
+  // validacion de campos
+  if (
+    !name ||
+    !image ||
+    typeof name !== "string" ||
+    typeof image !== "string" ||
+    name.trim() === "" ||
+    image.trim() === ""
+  ) {
+    return res
+      .status(400)
+      .send(
+        "El nombre y la imagen son campos obligatorios, no pueden ir vacios"
+      );
+  }
+
+  try {
+    const connection = await database.getConnection();
+    const result = await connection.query("UPDATE heroes_list SET name = ?, image = ? WHERE id = ?", [name, image, req.params.id]);
+    if (result.affectedRows === 0) return res.status(404).send("El heroe no fue encontrado")
+    const updatedHero = { id: req.params.id, name, image };
+    res.status(201).json(updatedHero);
+  } catch (error) {
+    res.status(500).send("Error al actualizar heroe");
+  }
 });
 
 // Eliminar un héroe
-app.delete("/heroes/:id", (req, res) => {
-  const heroIndex = heroes.findIndex((h) => h.id === parseInt(req.params.id));
-  if (heroIndex === -1)
-    return res.status(404).send("El héroe no fue encontrado");
-
-  const deletedHero = heroes.splice(heroIndex, 1);
-  res.json(deletedHero);
+app.delete("/heroes/:id", async(req, res) => {
+  try {
+    const connection = await database.getConnection();
+    const result = await connection.query("DELETE FROM heroes_list WHERE id = ?", [req.params.id]);
+    if (result.affectedRows === 0) return res.status(404).send("El heroe no fue encontrado")
+    res.status(201).json({ message: "Heroe eliminado"});
+  } catch (error) {
+    res.status(500).send("Error al actualizar heroe");
+  }
 });
+
