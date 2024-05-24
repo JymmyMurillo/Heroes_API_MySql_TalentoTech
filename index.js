@@ -3,15 +3,6 @@ const app = express();
 const port = 3000;
 const database = require("./database");
 
-// Datos de héroes con imágenes
-/* const heroes = [
-    { id: 1, name: 'Superman', image: 'https://example.com/superman.jpg' },
-    { id: 2, name: 'Batman', image: 'https://example.com/batman.jpg' },
-    { id: 3, name: 'Wonder Woman', image: 'https://example.com/wonderwoman.jpg' },
-    { id: 4, name: 'Flash', image: 'https://example.com/flash.jpg' },
-    { id: 5, name: 'Aquaman', image: 'https://example.com/aquaman.jpg' }
-]; */
-
 // Iniciar el servidor
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);
