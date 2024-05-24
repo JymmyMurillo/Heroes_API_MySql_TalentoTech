@@ -35,23 +35,49 @@ app.get("/heroes", async (req, res) => {
 app.get("/heroes/:id", async (req, res) => {
   try {
     const connection = await database.getConnection();
-    const result = await connection.query("SELECT * from heroes_list WHERE id = ?", req.params.id);
-    if (result.length ===0 ) return res.status(404).send("El héroe no fue encontrado");
+    const result = await connection.query(
+      "SELECT * from heroes_list WHERE id = ?",
+      req.params.id
+    );
+    if (result.length === 0)
+      return res.status(404).send("El héroe no fue encontrado");
     res.json(result);
   } catch (error) {
-    res.status(500).send('Error al buscar el heroe')
+    res.status(500).send("Error al buscar el heroe");
   }
 });
 
 // Crear un nuevo héroe
-app.post("/heroes", (req, res) => {
-  const newHero = {
-    id: heroes.length + 1,
-    name: req.body.name,
-    image: req.body.image,
-  };
-  heroes.push(newHero);
-  res.status(201).json(newHero);
+app.post("/heroes", async (req, res) => {
+  const { name, image } = req.body;
+
+  // validacion de campos
+  if (
+    !name ||
+    !image ||
+    typeof name !== "string" ||
+    typeof image !== "string" ||
+    name.trim() === "" ||
+    image.trim() === ""
+  ) {
+    return res
+      .status(400)
+      .send(
+        "El nombre y la imagen son campos obligatorios, no pueden ir vacios"
+      );
+  }
+
+  try {
+    const connection = await database.getConnection();
+    const result = await connection.query(
+      "INSERT INTO heroes_list (name, image) VALUES (?, ?)",
+      [name, image]
+    );
+    const newHero = { name, image };
+    res.status(201).json(newHero);
+  } catch (error) {
+    res.status(500).send("Error crear heroe");
+  }
 });
 
 // Actualizar un héroe existente
